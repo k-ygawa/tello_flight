@@ -2,6 +2,7 @@ from tello import Tello
 import pygame
 import time
 import numpy as np
+import cv2
 
 fly_flag = False    # 飛行中か否か
 auto_flag = False   # Auto/Manual = True/False
@@ -14,7 +15,7 @@ interLoc = True     # Auto/Manual引き換え用のインターロック
 #   :param  joy(object):        Joysticオブジェクト
 #
 def joy_control(drone, joy):
-    global auto_flag, interLoc
+    global fly_flag, auto_flag, interLoc
 
     pygame.event.pump() 
 
@@ -58,11 +59,11 @@ def joy_control(drone, joy):
 
     # 離陸/着陸
     if btn1 == 1 :
-        if fly_flag:
+        if not fly_flag:
             fly_flag = True
             drone.takeoff()
     elif btn3 == 1:
-        if not fly_flag:
+        if fly_flag:
             fly_flag = False
             drone.land()
 
@@ -88,20 +89,25 @@ def controlLoop():
 
     try:
         while True:
+            joy_control(drone, joy)
+
             frame = drone.read()
             if frame is None or frame.size == 0:
                 continue
+
+            msg_h = drone.get_height()
+            msg_b = drone.get_battery()
+            print(msg_h, msg_b)
             cv2.imshow('tello flight', frame)
             cv2.waitKey(1)
 
-            joy_control(drone, joy, auto_flag)
-            
             if auto_flag:
                 # ここに自動制御が入る予定
                 print('Auto!')
                 pass
             else:
-                print('Manual!')
+                #print('Manual!')
+                pass
 
             time.sleep(0.03)
 
