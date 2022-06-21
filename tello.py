@@ -26,8 +26,6 @@ class Tello:
         self.response = None
 
         self.frame = None
-        self.is_freeze = False
-        self.last_frame = None
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.tello_address = (tello_ip, tello_port)
@@ -77,23 +75,11 @@ class Tello:
 
 
     #------------------------------------------
-    #  一時停止モードへの変更
-    #
-    #   :param is_freeze(bool): Trueで静止画、Falseで動画
-    def video_freeze(self, is_freeze=True):
-        self.is_freeze = is_freeze
-        if is_freeze:
-            self.last_frame = self.frame
-
-    #------------------------------------------
     #  カメラで受信した最新の画像を返す
     #
     #  video_freeze(True)の場合、ビデオ出力を一時停止（最後の画像を送信）
     def read(self):
-        if self.is_freeze:
-            return self.last_frame
-        else:
-            return self.frame
+        return self.frame
 
 
     #------------------------------------------
@@ -113,10 +99,8 @@ class Tello:
             if self.abort_flag is True:
                 break
         timer.cancel()
-
-        if self.response is None:
-            response = 'none_response'
-        else:
+        response = None
+        if self.response is not None:
             response = self.response.decode('utf-8')
 
         self.response = None
@@ -152,7 +136,6 @@ class Tello:
             self.last_height = height
         except:
             height = self.last_height
-            pass
         return height
 
     #------------------------------------------
@@ -162,7 +145,7 @@ class Tello:
         try:
             battery = int(battery)
         except:
-            pass
+            battery = None
         return battery
 
     #------------------------------------------
@@ -172,7 +155,7 @@ class Tello:
         try:
             flight_time = int(flight_time)
         except:
-            pass
+            flight_time = None
         return flight_time
 
     #------------------------------------------
@@ -184,7 +167,7 @@ class Tello:
         try:
             speed = round((float(speed) / 27.7778), 1)
         except:
-            pass
+            speed = None
         return speed
 
 
